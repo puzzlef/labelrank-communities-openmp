@@ -2,6 +2,7 @@
 #include <utility>
 #include <cmath>
 #include <array>
+#include <omp.h>
 #include "_main.hxx"
 #include "Labelset.hxx"
 #include "labelrank.hxx"
@@ -85,6 +86,49 @@ auto labelrankBestLabels(const vector<Labelset<K, V, N>>& ls, const G& x) {
     a[u] = ls[u][0].first;
   });
   return a;
+}
+
+
+
+
+/**
+ * Detect community membership of each vertex in a graph using LabelRank algorithm.
+ * @param x original graph
+ * @param o labelrank options
+ */
+template <size_t N, class G>
+auto labelrankOmp(const G& x, const LabelrankOptions& o={}) {
+  using K = typename G::key_type;
+  using V = typename G::edge_value_type;
+  size_t S = x.span();
+  int    T = omp_get_max_threads();
+  vector<ALabelset<K, V>> la(T, ALabelset<K, V>(S));
+  vector<Labelset<K, V, N>> ls(S);
+  vector<Labelset<K, V, N>> ms(S);
+  float t = measureDurationMarked([&](auto mark) {
+    for (auto& a : la) a.clear();
+    ls.clear(); ls.resize(S);
+    ms.clear(); ms.resize(S);
+    mark([&]() {
+      #pragma omp parallel for schedule(monotonic:runtime)
+      for (K u=0; u<S; u++) {
+        int t = omp_get_thread_num();
+        if (!x.hasVertex(u)) continue;
+        labelrankInitializeVertexW(la[t], ls, x, u, V(o.inflation));
+      }
+      for (int i=0; i<o.maxIterations; ++i) {
+        #pragma omp parallel for schedule(monotonic:runtime)
+        for (K u=0; u<S; u++) {
+          int t = omp_get_thread_num();
+          if (!x.hasVertex(u)) continue;
+          if (labelrankIsVertexStable(ls, x, u, V(o.conditionalUpdate))) ms[u] = ls[u];
+          else labelrankUpdateVertexW(la[t], ms, ls, x, u, V(o.inflation));
+        }
+        swap(ls, ms);
+      }
+    });
+  }, o.repeat);
+  return LabelrankResult(labelrankBestLabels(ls, x), o.maxIterations, t);
 }
 
 

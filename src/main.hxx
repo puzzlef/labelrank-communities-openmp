@@ -14,4 +14,4 @@
 #include "properties.hxx"
 #include "modularity.hxx"
 #include "labelrank.hxx"
-#include "labelrankSeq.hxx"
+#include "labelrankOmp.hxx"

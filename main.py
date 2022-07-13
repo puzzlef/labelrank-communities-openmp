@@ -1,7 +1,7 @@
-# https://www.kaggle.com/wolfram77/puzzlef-labelrank-adjust-parameters
+# https://www.kaggle.com/wolfram77/puzzlef-labelrank-openmp-adjust-schedule
 import os
 from IPython.display import FileLink
-src="labelrank-adjust-parameters"
+src="labelrank-openmp-adjust-schedule"
 inp="/kaggle/input/graphs"
 out="{}.txt".format(src)
 !printf "" > "$out"
