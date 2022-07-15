@@ -3,8 +3,10 @@ const os = require('os');
 const path = require('path');
 
 const RGRAPH = /^Loading graph .*\/(.*?)\.mtx \.\.\./m;
-const RORDER = /^order: (\d+) size: (\d+) (?:\[\w+\] )?\{\}/m;
-const RRESLT = /^\[(\d+) edges; (.+?) gini_coef\.\] (\w+)/m;
+const RORDER = /^order: (\d+) size: (\d+) (?:\[\w+\] )?\{\} \(selfLoopAllVertices\)/m;
+const ROMPTH = /^OMP_NUM_THREADS=(\d+)/m;
+const RORGNL = /^\[(\S+?) modularity\] noop/;
+const RRESLT = /^\[(\S+?) ms; (\S+?) modularity\] (\w+)(?: \{sch_kind: (\w+), chunk_size: (\d+)\})?/m;
 
 
 
@@ -53,12 +55,28 @@ function readLogLine(ln, data, state) {
     state.order = parseFloat(order);
     state.size  = parseFloat(size);
   }
-  else if (RRESLT.test(ln)) {
-    var [, edges, gini_coefficient, technique] = RRESLT.exec(ln);
+  else if (ROMPTH.test(ln)) {
+    var [, omp_num_threads] = ROMPTH.exec(ln);
+    state.omp_num_threads = parseFloat(omp_num_threads);
+  }
+  else if (RORGNL.test(ln)) {
+    var [, modularity] = RORGNL.exec(ln);
     data.get(state.graph).push(Object.assign({}, state, {
-      edges:            parseFloat(edges),
-      gini_coefficient: parseFloat(gini_coefficient),
-      technique
+      time:          0,
+      modularity:    parseFloat(modularity),
+      technique:     'noop',
+      schedule_kind: '',
+      chunk_size:    0,
+    }));
+  }
+  else if (RRESLT.test(ln)) {
+    var [, time, modularity, technique, schedule_kind, chunk_size] = RRESLT.exec(ln);
+    data.get(state.graph).push(Object.assign({}, state, {
+      time:          parseFloat(time),
+      modularity:    parseFloat(modularity),
+      technique:     technique || '',
+      schedule_kind: schedule_kind || '',
+      chunk_size:    parseFloat(chunk_size || '0'),
     }));
   }
   return state;
