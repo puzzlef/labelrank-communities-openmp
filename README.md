@@ -65,7 +65,7 @@ different *labelset capacity*, or different LabelRank *parameters* are used.
 [![](https://img.youtube.com/vi/5TtY3Wuet58/maxresdefault.jpg)](https://www.youtube.com/watch?v=5TtY3Wuet58)<br>
 [![ORG](https://img.shields.io/badge/org-puzzlef-green?logo=Org)](https://puzzlef.github.io)
 [![DOI](https://zenodo.org/badge/513425848.svg)](https://zenodo.org/badge/latestdoi/513425848)
-
+![](https://ga-beacon.deno.dev/G-KD28SG54JQ:hbAybl6nQFOtmVxW4if3xw/github.com/puzzlef/labelrank-communities-openmp)
 
 [Prof. Dip Sankar Banerjee]: https://sites.google.com/site/dipsankarban/
 [Prof. Kishore Kothapalli]: https://faculty.iiit.ac.in/~kkishore/
